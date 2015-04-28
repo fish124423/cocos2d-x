@@ -1,18 +1,16 @@
 #include "HelloWorldScene.h"
 #include "AppMacros.h"
 
-USING_NS_CC;
+#include "Particle3D/CCParticleSystem3D.h"
+#include "Particle3D/PU/CCPUParticleSystem3D.h"
 
+USING_NS_CC;
 
 Scene* HelloWorld::scene()
 {
-    // 'scene' is an autorelease object
     auto scene = Scene::create();
     
-    // 'layer' is an autorelease object
     HelloWorld *layer = HelloWorld::create();
-
-    // add layer as a child to scene
     scene->addChild(layer);
 
     // return the scene
@@ -22,56 +20,81 @@ Scene* HelloWorld::scene()
 // on "init" you need to initialize your instance
 bool HelloWorld::init()
 {
-    //////////////////////////////
-    // 1. super init first
     if ( !Layer::init() )
     {
         return false;
     }
     
     auto visibleSize = Director::getInstance()->getVisibleSize();
-    auto origin = Director::getInstance()->getVisibleOrigin();
+	auto origin = Director::getInstance()->getVisibleOrigin();
 
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
+	{
+		auto szWin = Director::getInstance()->getWinSize();
 
-    // add a "close" icon to exit the progress. it's an autorelease object
-    auto closeItem = MenuItemImage::create(
-                                        "CloseNormal.png",
-                                        "CloseSelected.png",
-                                        CC_CALLBACK_1(HelloWorld::menuCloseCallback,this));
-    
-    closeItem->setPosition(origin + Vec2(visibleSize) - Vec2(closeItem->getContentSize() / 2));
+		auto pPlane = Sprite3D::create("Sprite3DTest/boss1.obj");
 
-    // create menu, it's an autorelease object
-    auto menu = Menu::create(closeItem, nullptr);
-    menu->setPosition(Vec2::ZERO);
-    this->addChild(menu, 1);
-    
-    /////////////////////////////
-    // 3. add your codes below...
+		pPlane->setScale(4.f);
+		pPlane->setTexture("Sprite3DTest/boss.png");
+		pPlane->setPosition3D(Vec3(0, 0, 0));
+		pPlane->runAction(RepeatForever::create(RotateBy::create(3, 360)));
 
-    // add a label shows "Hello World"
-    // create and initialize a label
-    
-    auto label = LabelTTF::create("Hello World", "Arial", TITLE_FONT_SIZE);
-    
-    // position the label on the center of the screen
-    label->setPosition(origin.x + visibleSize.width/2,
-                            origin.y + visibleSize.height - label->getContentSize().height);
+		//add to scene
+		addChild(pPlane);
 
-    // add the label as a child to this layer
-    this->addChild(label, 1);
+		// Make sprite1 touchable
+		auto listener1 = EventListenerTouchOneByOne::create();
+		listener1->setSwallowTouches(true);
 
-    // add "HelloWorld" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
+		listener1->onTouchBegan = [](Touch* touch, Event* event)
+		{
+			auto target = static_cast<Sprite3D*>(event->getCurrentTarget());
 
-    // position the sprite on the center of the screen
-    sprite->setPosition(Vec2(visibleSize / 2) + origin);
+			Rect rect = target->getBoundingBox();
+			if (rect.containsPoint(touch->getLocation()))
+			{
+				log("sprite3d began... x = %f, y = %f", touch->getLocation().x, touch->getLocation().y);
+				target->setOpacity(100);
+				return true;
+			}
+			return false;
+		};
 
-    // add the sprite as a child to this layer
-    this->addChild(sprite);
+		listener1->onTouchMoved = [](Touch* touch, Event* event)
+		{
+			auto target = static_cast<Sprite3D*>(event->getCurrentTarget());
+			target->setPosition(target->getPosition() + touch->getDelta());
+		};
+
+		listener1->onTouchEnded = [=](Touch* touch, Event* event)
+		{
+			auto target = static_cast<Sprite3D*>(event->getCurrentTarget());
+			log("sprite3d onTouchesEnded.. ");
+			target->setOpacity(255);
+		};
+
+		_eventDispatcher->addEventListenerWithSceneGraphPriority(listener1, pPlane);
+
+		{
+			FileUtils::getInstance()->addSearchPath("Particle3D/materials");
+			FileUtils::getInstance()->addSearchPath("Particle3D/scripts");
+			FileUtils::getInstance()->addSearchPath("Sprite3DTest");
+
+			auto rootps = PUParticleSystem3D::create("flareShield.pu");
+
+			rootps->startParticleSystem();
+			pPlane->addChild(rootps, 0, 0);
+		}
+	}
+
+		{
+			Size visibleSize = Director::getInstance()->getVisibleSize();
+			auto _camera = Camera::createPerspective(60, visibleSize.width / visibleSize.height, 10, 5000);
+			_camera->setPosition3D(Vec3(0.f, 0.f, 500.f));
+			_camera->setCameraFlag(CameraFlag::USER1);
+
+			addChild(_camera);
+			setCameraMask(static_cast<unsigned>(CameraFlag::USER1));
+		}
     
     return true;
 }
