@@ -142,19 +142,21 @@ xcopy "$(OutDir)..\*.dll" "$(OutDir)" /D /Y</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Classes\Actor.cpp" />
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
     <ClCompile Include="..\Classes\HelloWorldScene.cpp" />
-    <ClCompile Include="Actor.cpp" />
+    <ClCompile Include="..\Classes\Path.cpp" />
+    <ClCompile Include="..\Classes\Random.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Path.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Classes\Actor.h" />
     <ClInclude Include="..\Classes\AppDelegate.h" />
     <ClInclude Include="..\Classes\AppMacros.h" />
     <ClInclude Include="..\Classes\HelloWorldScene.h" />
-    <ClInclude Include="Actor.h" />
+    <ClInclude Include="..\Classes\Path.h" />
+    <ClInclude Include="..\Classes\Random.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="Path.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\cocos\2d\libcocos2d.vcxproj">

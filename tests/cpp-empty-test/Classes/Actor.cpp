@@ -1,4 +1,4 @@
-#include "cocos2d.h"
+﻿#include "cocos2d.h"
 
 #include "3d/CCSprite3D.h"
 #include "Path.h"
@@ -9,13 +9,15 @@
 #define e3DSprite 0
 
 CActor::CActor():
-m_pAvatar(nullptr),
-m_pPath(nullptr)
+m_pAvatar(nullptr)
 {
+	m_pPath = new CPath;
+	m_pPath->init();
 }
 
 CActor::~CActor()
 {
+	delete m_pPath;
 }
 
 bool CActor::init()
@@ -31,20 +33,21 @@ bool CActor::init()
 	return false;
 }
 
-void CActor::setPath(CPath* path)
+bool CActor::update(float delta)
 {
-	m_pPath = path;
-}
+	bool bDead = false;
 
-void CActor::update(float delta)
-{
 	if (m_pPath)
 	{
+		static cocos2d::Vec3 l_vMRU;
 		cocos2d::Vec3 vPos;
 
+		bDead = m_pPath->update(delta);
 		m_pPath->runSplineLogicEx(vPos);
 		m_pAvatar->setPosition3D(vPos);
+
+		l_vMRU = vPos;
 	}
 
-	return;
+	return bDead;
 }

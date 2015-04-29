@@ -20,10 +20,13 @@
     <ClCompile Include="main.cpp">
       <Filter>win32</Filter>
     </ClCompile>
-    <ClCompile Include="Path.cpp">
+    <ClCompile Include="..\Classes\Actor.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
-    <ClCompile Include="Actor.cpp">
+    <ClCompile Include="..\Classes\Path.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Random.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
   </ItemGroup>
@@ -40,11 +43,14 @@
     <ClInclude Include="..\Classes\AppMacros.h">
       <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="Path.h">
-      <Filter>win32</Filter>
+    <ClInclude Include="..\Classes\Actor.h">
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="Actor.h">
-      <Filter>win32</Filter>
+    <ClInclude Include="..\Classes\Path.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Random.h">
+      <Filter>Classes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

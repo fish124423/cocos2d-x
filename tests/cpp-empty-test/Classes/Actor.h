@@ -18,10 +18,9 @@ public:
 public:
 	virtual bool		init();
 public:
-	void				setPath(CPath*);
 
-	virtual void		update(float delta);
-private:
+	bool				update(float delta);
+public:
 	cocos2d::Sprite3D*	m_pAvatar;
 	CPath*				m_pPath;
 };

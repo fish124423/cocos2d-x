@@ -1,6 +1,11 @@
 #include "HelloWorldScene.h"
 #include "AppMacros.h"
 
+#include "Actor.h"
+#include "Path.h"
+
+#include "Random.h"
+
 #include "Particle3D/CCParticleSystem3D.h"
 #include "Particle3D/PU/CCPUParticleSystem3D.h"
 
@@ -16,6 +21,17 @@ Scene* HelloWorld::scene()
     // return the scene
     return scene;
 }
+
+#define TO_ROUND(x) ((x)/180.0f * 3.14159265358)
+
+const float l_fHalfFov = 30;
+const float l_fHalfFovRadian = TO_ROUND(l_fHalfFov);
+
+float l_fH2WRatio = 1.f;
+
+const int	l_nMaxDepth = 5000;
+const int	l_nNear = 10;
+const int   l_nFar = l_nMaxDepth + l_nNear;
 
 // on "init" you need to initialize your instance
 bool HelloWorld::init()
@@ -35,11 +51,11 @@ bool HelloWorld::init()
 
 		pPlane->setScale(4.f);
 		pPlane->setTexture("Sprite3DTest/boss.png");
-		pPlane->setPosition3D(Vec3(0, 0, 0));
+		pPlane->setPosition3D(Vec3(0, 0, -100));
 		pPlane->runAction(RepeatForever::create(RotateBy::create(3, 360)));
 
 		//add to scene
-		addChild(pPlane);
+		//addChild(pPlane);
 
 		// Make sprite1 touchable
 		auto listener1 = EventListenerTouchOneByOne::create();
@@ -86,15 +102,32 @@ bool HelloWorld::init()
 		}
 	}
 
-		{
+		{		
 			Size visibleSize = Director::getInstance()->getVisibleSize();
-			auto _camera = Camera::createPerspective(60, visibleSize.width / visibleSize.height, 10, 5000);
-			_camera->setPosition3D(Vec3(0.f, 0.f, 500.f));
-			_camera->setCameraFlag(CameraFlag::USER1);
 
-			addChild(_camera);
+			l_fH2WRatio = visibleSize.width / visibleSize.height;
+
+			m_pCamera = Camera::createPerspective(60, l_fH2WRatio, l_nNear, l_nFar);
+			m_pCamera->setPosition3D(Vec3(0.f, 0.f, 0.f));
+			m_pCamera->setCameraFlag(CameraFlag::USER1);
+
+			m_Actors.resize(100);
+			for (int i = 0; i < 100; ++i)
+			{
+				auto pActor = CActor::create();
+				addChild(pActor->m_pAvatar, i, i);
+				m_Actors[i] = pActor;
+
+				pActor->retain();
+
+				ResetActor(pActor);
+			}
+
+			addChild(m_pCamera);
 			setCameraMask(static_cast<unsigned>(CameraFlag::USER1));
 		}
+
+		scheduleUpdate();
     
     return true;
 }
@@ -111,4 +144,54 @@ void HelloWorld::menuCloseCallback(Ref* sender)
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
     exit(0);
 #endif
+}
+
+void HelloWorld::update(float dt)
+{
+	for (auto pActor: m_Actors)
+	{
+		if (!pActor->update(dt))
+		{
+			ResetActor(pActor);
+		}
+	}
+}
+
+void HelloWorld::ResetActor(CActor* pActor)
+{
+	auto pPath = pActor->m_pPath;
+
+	pPath->m_fTime = 10.f + Random::sharedRandom()->randInt(0, 20);
+
+	int nSteps = 6;
+	int nStepLen = l_nMaxDepth / nSteps;
+
+	pPath->m_fTimeAcc = 0.f;
+	pPath->m_PointCon.resize(nSteps + 1);
+
+	for (int i = 0; i <nSteps; ++i)
+	{
+		int nCurDist = l_nFar - nStepLen * i;
+		pPath->m_PointCon[i] = getRandPos(nCurDist);
+	}
+
+	pPath->m_PointCon[nSteps] = getRandPos(l_nNear);
+}
+
+cocos2d::Vec3 HelloWorld::getRandPos(int nDist)
+{
+	if (nDist < l_nNear)
+		nDist = l_nNear;
+
+	if (nDist > l_nFar)
+		nDist = l_nFar;
+
+	int nHalfH = std::tanf(l_fHalfFovRadian) * nDist;
+
+	int nHalfW = nHalfH * l_fH2WRatio;
+
+	int nW = Random::sharedRandom()->randInt(-nHalfW, nHalfW);
+	int nH = Random::sharedRandom()->randInt(-nHalfH, nHalfH);
+
+	return Vec3(nW, nH, -nDist);
 }

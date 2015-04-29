@@ -38,7 +38,14 @@ bool CPath::init()
 bool CPath::update(float dt)
 {
 	m_fTimeAcc += dt;
-	return true;
+
+	if (m_fTimeAcc >= m_fTime)
+	{
+		m_fTimeAcc = m_fTime;
+		return false;
+	}
+	else
+		return true;
 }
 
 void CPath::runSplineLogicEx(cocos2d::Vec3& vRef)
@@ -46,23 +53,23 @@ void CPath::runSplineLogicEx(cocos2d::Vec3& vRef)
 	float fPercentage = m_fTimeAcc / m_fTime;
 
 	int nSections = m_PointCon.size() - 3;
-	m_PointCon[0] = m_vInitPos;
-	int currPt = std::min((int)(floor(fPercentage*(float)nSections)), nSections - 1);
 
-	float   t = fPercentage * (float)nSections - (float)currPt;
-	float   fstep = t*(s_SplineStep - 1);
-	int     nStep = (int)fstep;
-	float   fVal = fstep - nStep - 0.5f;
+	int nCurSteps = std::min((int)(floor(fPercentage*(float)nSections)), nSections - 1);
+
+	float   t = fPercentage * (float)nSections - (float)nCurSteps;
+	float   fstep	= t*(s_SplineStep - 1);
+	int     nStep	= (int)fstep;
+	float   fVal	= fstep - nStep - 0.5f;
+	
 	if (fVal > 0.0001f)
 	{
 		++nStep;
 	}
 
-	cocos2d::Vec3& a = m_PointCon[currPt];
-	cocos2d::Vec3& b = m_PointCon[currPt + 1];
-	cocos2d::Vec3& c = m_PointCon[currPt + 2];
-	cocos2d::Vec3& d = m_PointCon[currPt + 3];
+	cocos2d::Vec3& a = m_PointCon[nCurSteps];
+	cocos2d::Vec3& b = m_PointCon[nCurSteps + 1];
+	cocos2d::Vec3& c = m_PointCon[nCurSteps + 2];
+	cocos2d::Vec3& d = m_PointCon[nCurSteps + 3];
 
-	// 计算出当前点坐标
 	vRef = (-a + 3 * b - 3 * c + d)*s_splineTable[nStep].w + (2 * a - 5 * b + 4 * c - d)*s_splineTable[nStep].z + (-a + c)*s_splineTable[nStep].y + b;
 }

@@ -3,6 +3,8 @@
 
 #include "cocos2d.h"
 
+class CActor;
+
 class HelloWorld : public cocos2d::Layer
 {
 public:
@@ -17,6 +19,14 @@ public:
     
     // implement the "static node()" method manually
     CREATE_FUNC(HelloWorld);
+
+	virtual void         update(float dt);
+
+	void				ResetActor(CActor*);
+	cocos2d::Vec3		getRandPos(int nDist);
+public:
+	std::vector<CActor*>	m_Actors;
+	cocos2d::Camera*		m_pCamera;
 };
 
 #endif // __HELLOWORLD_SCENE_H__
